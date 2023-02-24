@@ -54,7 +54,6 @@ bot.on("msg", async (ctx) => {
         parse_mode: "Markdown",
         reply_to_message_id: ctx.msg.message_id,
       });
-      return;
     } else {
       const status = await ctx.reply(`*Downloading*`, {
         parse_mode: "Markdown",
@@ -62,8 +61,10 @@ bot.on("msg", async (ctx) => {
       const url = ctx.msg.text;
       const info = await ytdl.getInfo(url);
       const video = ytdl(url, { quality: "highest" });
-      ctx
-        .replyWithVideo(new InputFile(video))
+      await ctx
+        .replyWithVideo(new InputFile(video), {
+          reply_to_message_id: ctx.msg.message_id,
+        })
         .then(console.log(`Video sent successfully to ${ctx.from.id}`))
         .catch((error) => {
           console.error("Error sending video:", error);
