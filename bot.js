@@ -55,9 +55,13 @@ bot.on("msg", async (ctx) => {
       });
       const url = ctx.msg.text;
       const info = await ytdl.getInfo(url);
+      console.log(info.videoDetails.title);
       const video = ytdl(url, { quality: "highest" });
-      ctx
-        .replyWithVideo(new InputFile(video))
+      await ctx
+        .replyWithVideo(new InputFile(video), {
+          caption: `[${info.videoDetails.title}](${ctx.msg.text})`,
+          parse_mode: "Markdown",
+        })
         .then(console.log(`Video sent successfully to ${ctx.from.id}`))
         .catch((error) => {
           console.error("Error sending video:", error);
