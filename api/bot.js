@@ -1,5 +1,11 @@
 require("dotenv").config();
-const { Bot, InputFile, HttpError, GrammyError } = require("grammy");
+const {
+  Bot,
+  InputFile,
+  webhookCallback,
+  HttpError,
+  GrammyError,
+} = require("grammy");
 const ytdl = require("ytdl-core");
 const regex =
   /(?:(?<=^)|(?<=\s))(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([^\s/]+)(?=$|\s)/;
@@ -98,4 +104,4 @@ bot.catch((err) => {
 
 // Run
 
-bot.start();
+export default webhookCallback(bot, "http");
