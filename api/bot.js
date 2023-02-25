@@ -55,9 +55,6 @@ bot.on("msg", async (ctx) => {
         reply_to_message_id: ctx.msg.message_id,
       });
     } else {
-      const status = await ctx.reply(`*Downloading*`, {
-        parse_mode: "Markdown",
-      });
       const url = ctx.msg.text;
       const info = await ytdl.getInfo(url);
       const video = ytdl(url, { quality: "highest" });
@@ -73,9 +70,6 @@ bot.on("msg", async (ctx) => {
             "*Error sending video file.*\n_Note that videos more than 50MB are not supported._"
           );
         });
-      setTimeout(async () => {
-        bot.api.deleteMessage(ctx.from.id, status.message_id);
-      }, 3000);
     }
   } catch (error) {
     console.error(error);
