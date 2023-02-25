@@ -14,6 +14,11 @@ const regex =
 
 const bot = new Bot(process.env.BOT_TOKEN);
 
+// DB
+
+const mysql = require("mysql2");
+const connection = mysql.createConnection(process.env.DATABASE_URL);
+
 // Response
 
 async function responseTime(ctx, next) {
