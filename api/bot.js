@@ -92,20 +92,27 @@ bot.on("msg", async (ctx) => {
     } else {
       const url = ctx.msg.text;
       const info = await ytdl.getInfo(url);
-      const video = ytdl(url, { quality: "highest" });
-      await ctx
-        .replyWithVideo(new InputFile(video), {
-          caption: `[${info.videoDetails.title}](${ctx.msg.text})`,
-          parse_mode: "Markdown",
-        })
-        .then(console.log(`Video sent successfully to ${ctx.from.id}`))
-        .catch((error) => {
+      const videoFile = ytdl(url, { quality: "highest" });
+      async function sendVideo(ctx, videoFile) {
+        try {
+          await ctx
+            .replyWithVideo(new InputFile(videoFile), {
+              caption: `[${info.videoDetails.title}](${ctx.msg.text})`,
+              parse_mode: "Markdown",
+            })
+            .then(console.log(`Video sent successfully to ${ctx.from.id}`));
+        } catch (error) {
           console.error("Error sending video:", error);
-          ctx.reply(
+          await ctx.reply(
             "*Error sending video file.*\n_Note that videos more than 50MB are not supported._",
-            { parse_mode: "Markdown", reply_to_message_id: ctx.msg.message_id }
+            {
+              parse_mode: "Markdown",
+              reply_to_message_id: ctx.msg.message_id,
+            }
           );
-        });
+        }
+      }
+      await sendVideo(ctx, videoFile);
     }
   } catch (error) {
     if (error instanceof GrammyError) {
