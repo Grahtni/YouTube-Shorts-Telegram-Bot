@@ -7,8 +7,8 @@ const {
   GrammyError,
 } = require("grammy");
 const ytdl = require("ytdl-core");
-const regex =
-  /(?:(?<=^)|(?<=\s))(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([^\s/]+)(?=$|\s)/;
+//const regex =
+/(?:(?<=^)|(?<=\s))(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([^\s/]+)(?=$|\s)/;
 
 // Bot
 
@@ -78,13 +78,13 @@ bot.command("help", async (ctx) => {
       { parse_mode: "Markdown" }
     )
     .then(console.log("Help command sent to", ctx.from.id))
-    .catch((e) => console.error(e));
+    .catch((error) => console.error(error));
 });
 
 bot.on("msg", async (ctx) => {
   console.log("Query received:", ctx.msg.text, "from", ctx.from.id);
   try {
-    if (!regex.test(ctx.msg.text)) {
+    if (!ctx.msg.text) {
       await ctx.reply("*Send a valid YouTube shorts link.*", {
         parse_mode: "Markdown",
         reply_to_message_id: ctx.msg.message_id,
@@ -102,13 +102,23 @@ bot.on("msg", async (ctx) => {
         .catch((error) => {
           console.error("Error sending video:", error);
           ctx.reply(
-            "*Error sending video file.*\n_Note that videos more than 50MB are not supported._"
+            "*Error sending video file.*\n_Note that videos more than 50MB are not supported._",
+            { parse_mode: "Markdown", reply_to_message_id: ctx.msg.message_id }
           );
         });
     }
   } catch (error) {
-    console.error(error);
-    await ctx.reply("An error occurred");
+    if (error instanceof GrammyError) {
+      console.log(`Error sending message${error.message}`);
+      return;
+    } else {
+      console.log("An error occurred");
+      await ctx.reply(`*${error}*.`, {
+        parse_mode: "Markdown",
+        reply_to_message_id: ctx.msg.message_id,
+      });
+      return;
+    }
   }
 });
 
@@ -122,10 +132,14 @@ bot.catch((err) => {
     "\nQuery:",
     ctx.msg.text
   );
-  ctx.reply("An error occurred");
   const e = err.error;
   if (e instanceof GrammyError) {
     console.error("Error in request:", e.description);
+    if (e.description === "Forbidden: bot was blocked by the user") {
+      console.log("Bot was blocked by the user");
+    } else {
+      ctx.reply("An error occurred");
+    }
   } else if (e instanceof HttpError) {
     console.error("Could not contact Telegram:", e);
   } else {
