@@ -34,7 +34,7 @@ bot.use(responseTime);
 
 bot.command("start", async (ctx) => {
   await ctx
-    .reply("*Welcome!* ✨ Send a YouTube shorts link.", {
+    .reply("*Welcome!* ✨\n_Send a YouTube shorts link._", {
       parse_mode: "Markdown",
     })
     .then(() => {
@@ -116,14 +116,28 @@ bot.on("msg", async (ctx) => {
     }
   } catch (error) {
     if (error instanceof GrammyError) {
-      console.log(`Error sending message${error.message}`);
+      if (error.message.includes("Forbidden: bot was blocked by the user")) {
+        console.log("Bot was blocked by the user");
+      } else if (error.message.includes("Call to 'sendVideo' failed!")) {
+        console.log("Error sending media.", error);
+        await ctx.reply(`*Error contacting YouTube.*`, {
+          parse_mode: "Markdown",
+          reply_to_message_id: ctx.msg.message_id,
+        });
+      } else {
+        await ctx.reply(`*An error occurred: ${error.message}*`, {
+          parse_mode: "Markdown",
+          reply_to_message_id: ctx.msg.message_id,
+        });
+      }
+      console.log(`Error sending message: ${error.message}`);
       return;
     } else {
-      console.log("An error occurred");
-      await ctx.reply(`*${error}*.`, {
-        parse_mode: "Markdown",
-        reply_to_message_id: ctx.msg.message_id,
-      });
+      console.log(`An error occured:`, error);
+      await ctx.reply(
+        `*An error occurred. Are you sure you sent a valid YouTube shorts link?*\n_Error: ${error.message}_`,
+        { parse_mode: "Markdown", reply_to_message_id: ctx.msg.message_id }
+      );
       return;
     }
   }
