@@ -7,8 +7,8 @@ const {
   GrammyError,
 } = require("grammy");
 const ytdl = require("ytdl-core");
-//const regex =
-/(?:(?<=^)|(?<=\s))(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([^\s/]+)(?=$|\s)/;
+const regex =
+  /(?:(?<=^)|(?<=\s))(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([^\s/]+)(?=$|\s)/;
 
 // Bot
 
@@ -82,14 +82,40 @@ bot.command("help", async (ctx) => {
 });
 
 bot.on("msg", async (ctx) => {
-  console.log("Query received:", ctx.msg.text, "from", ctx.from.id);
+  // Logging
+
+  const from = ctx.from;
+  const name =
+    from.last_name === undefined
+      ? from.first_name
+      : `${from.first_name} ${from.last_name}`;
+  console.log(
+    `From: ${name} (@${from.username}) ID: ${from.id}\nMessage: ${ctx.msg.text}`
+  );
+
+  // Logic
   try {
-    if (!ctx.msg.text) {
+    if (!regex.match(ctx.msg.text)) {
       await ctx.reply("*Send a valid YouTube shorts link.*", {
         parse_mode: "Markdown",
         reply_to_message_id: ctx.msg.message_id,
       });
+      return;
     } else {
+      const statusMessage = await ctx.reply(`*Downloading*`, {
+        parse_mode: "Markdown",
+      });
+      async function deleteMessageWithDelay(fromId, messageId, delayMs) {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => {
+            bot.api
+              .deleteMessage(fromId, messageId)
+              .then(() => resolve())
+              .catch((error) => reject(error));
+          }, delayMs);
+        });
+      }
+      await deleteMessageWithDelay(ctx.from.id, statusMessage.message_id, 3000);
       const url = ctx.msg.text;
       const info = await ytdl.getInfo(url);
       const videoFile = ytdl(url, { quality: "highest" });
