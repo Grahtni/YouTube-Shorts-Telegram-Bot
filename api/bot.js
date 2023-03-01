@@ -95,12 +95,26 @@ bot.on("msg", async (ctx) => {
       const videoFile = ytdl(url, { quality: "highest" });
       async function sendVideo(ctx, videoFile) {
         try {
-          await ctx
-            .replyWithVideo(new InputFile(videoFile), {
-              caption: `[${info.videoDetails.title}](${ctx.msg.text})`,
-              parse_mode: "Markdown",
-            })
-            .then(console.log(`Video sent successfully to ${ctx.from.id}`));
+          await Promise.race([
+            new Promise((_, reject) =>
+              setTimeout(
+                () => reject(new Error("Video sending timed out")),
+                7000
+              )
+            ),
+            new Promise(async (resolve) => {
+              await ctx
+                .replyWithVideo(new InputFile(videoFile), {
+                  caption: `[${info.videoDetails.title}](${ctx.msg.text})`,
+                  reply_to_message_id: ctx.msg.message_id,
+                  parse_mode: "Markdown",
+                })
+                .then(() =>
+                  console.log(`Video sent successfully to ${ctx.from.id}`)
+                );
+              resolve();
+            }),
+          ]);
         } catch (error) {
           console.error("Error sending video:", error);
           await ctx.reply(
