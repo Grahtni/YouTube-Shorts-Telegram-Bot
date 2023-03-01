@@ -7,8 +7,8 @@ const {
   GrammyError,
 } = require("grammy");
 const ytdl = require("ytdl-core");
-const regex =
-  /(?:(?<=^)|(?<=\s))(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([^\s/]+)(?=$|\s)/;
+//const regex =
+/(?:(?<=^)|(?<=\s))(?:https?:\/\/)?(?:www\.)?youtube\.com\/shorts\/([^\s/]+)(?=$|\s)/;
 
 // Bot
 
@@ -95,7 +95,7 @@ bot.on("msg", async (ctx) => {
 
   // Logic
   try {
-    if (!regex.match(ctx.msg.text)) {
+    if (!ctx.msg.text) {
       await ctx.reply("*Send a valid YouTube shorts link.*", {
         parse_mode: "Markdown",
         reply_to_message_id: ctx.msg.message_id,
